@@ -10,10 +10,14 @@
                     <group>
                         <field name="name" />
                         <field name="author_ids" widget="many2many_tags"/>
+                        <field name="publisher_id"/>
+                        <field name="category_id"/>
+                        <field name="ref_doc_id" />
                     </group>
                     <group>
                         <field name="short_name" />
                         <field name="date_release" />
+                        <field name="age_days" />
                     </group>
                     <group>
                         <field name="state" />
@@ -23,7 +27,7 @@
                     </group>
                     <group>
                         <field name="date_updated" />
-                        <field name="cover" widget="image" class="oe_avatar" />
+                        <field name="cover" widget="image" class="oe_avatar"/>
                         <field name="reader_rating"/>
                     </group>
                     <group>
@@ -42,7 +46,10 @@
             <field name="name" />
             <field name="short_name" />
             <field name="book_cost" />
-            <!-- <field name="author_ids" widget="oe_avatar" /> -->
+            <field name="publisher_city" />
+            <field name="ref_doc_id" />
+            
+            <field name="cover" class="oe_avatar"/>
         </tree>
     </field>
 </record>
