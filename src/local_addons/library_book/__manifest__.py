@@ -17,7 +17,7 @@
     # Check https://github.com/odoo/odoo/blob/14.0/odoo/addons/base/data/ir_module_category_data.xml
     # for the full list
     'category': 'Uncategorized',
-    'version': '0.1',
+    'version': '14.1.0.1',
 
     # any module necessary for this one to work correctly
     'depends': ['base'],
@@ -27,8 +27,10 @@
         'security/groups.xml',
         'security/ir.model.access.csv',
         'views/library_book.xml',
+        'views/library_book_category.xml',
         'views/views.xml',
         'views/templates.xml',
+        'data/data.xml'
     ],
     # only loaded in demonstration mode
     'demo': [

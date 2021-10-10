@@ -1,7 +1,14 @@
 # -*- coding: utf-8 -*-
 
+from ast import parse
+import logging
 from odoo import models, fields, api
 from datetime import timedelta
+from enum import Enum
+from odoo.exceptions import UserError
+from odoo.tools.translate import _
+
+_logger = logging.getLogger(__name__)
 
 class BookArchive(models.AbstractModel):
     _name = 'base.archive'
@@ -11,6 +18,12 @@ class BookArchive(models.AbstractModel):
         for record in self: 
             record.active = not record.active 
 
+class State(Enum):
+    draft = 'Not Available'
+    available = 'Available'
+    borrowed = 'Borrowed'
+    lost = 'Lost'
+
 class Book(models.Model):
     _name = 'library.book'
     _description = 'Library Book'
@@ -18,12 +31,16 @@ class Book(models.Model):
     _inherit = ['base.archive']
 
     name = fields.Char('Title', required = True)
+    isbn = fields.Char('ISBN')
+    old_edition = fields.Many2one(comodel_name='library.book', string='Old Edition')
+    manager_remarks = fields.Text('Manager Remarks')
     short_name = fields.Char('Short Name', required = True, translate= True, index=True)
     date_release = fields.Date(string="Release Date")
     notes = fields.Text('Internal Notes')
     state = fields.Selection([
         ('draft', 'Not Available'),
         ('available', 'Available'),
+        ('borrowed', 'Borrowed'),
         ('lost', 'Lost')
     ], 'state',  default = 'draft')
     description = fields.Html('Description', sanitize= True, strip_style= False)
@@ -108,6 +125,139 @@ class Book(models.Model):
         ])
         return [(x.model, x.name)for x in models]
 
+    @api.model
+    def is_allowed_transition(self, old_state, new_state):
+        """
+        helper method to check whether a state transition is allowed
+        """
+        allowed = [('draft', 'available'), 
+                   ('available', 'borrowed'), 
+                   ('borrowed', 'available'), 
+                   ('available', 'lost'), 
+                   ('borrowed', 'lost'), 
+                   ('lost', 'available')]
+        return (old_state, new_state) in allowed
+    
+    def change_state(self, new_state):
+        for book in self:
+            if book.is_allowed_transition(book.state, new_state):
+                book.state = new_state
+            else:
+                msg = _(f'Moving from {book.state} to {new_state}')
+                raise UserError(msg)
+
+    def make_available(self):
+        self.change_state(State.available.name)
+    def make_borrowed(self):
+        self.change_state(State.borrowed.name)
+    def make_lost(self):
+        self.change_state(State.lost.name)
+    
+    def log_all_library_members(self): 
+        # this is empty set of library member
+        library_member_model = self.env['library.member']
+
+        all_members = library_member_model.search([])
+        print("ALL MEMBERS: " , all_members)
+        return True
+
+    def change_update_date(self):
+        """
+            checking whether the book recordset that's passed as self contains 
+            exactly one record by calling ensure_one(). This method will raise an exception if this 
+            is not the case
+        """
+        
+        self.ensure_one()
+        self.date_release = fields.Date.today()
+
+    def find_book(self):
+        domain = [
+            '|',
+                '&', ('name', 'ilike', 'Book Name'),
+                     ('category_id.name', 'ilike', 'Category Name' ),
+                '&', ('name', 'ilike', 'Book Name 2'),
+                     ('name', 'ilike', 'category name 2')
+
+        ]
+
+        return self.search(domain)
+
+    def find_partner(self):
+        partnerObj = self.env['res.partner']
+        domain = [
+            '&',
+                ('name', 'ilike', 'Mohamed'),
+                ('company_id.name', 'ilike', 'odoo')
+        ]
+
+        partner = partnerObj.search(domain)
+                
+    def createRecordset(self):
+        partner = self.env['res.partner'].search([])
+        bookPartners = self.search([]).author_ids
+        result = partner & bookPartners
+        print(result)
+
+    @api.model
+    def books_with_multiple_authors(self, all_books):        
+        def predicate(book):
+            if len(book.author_ids) > 0:
+                return True
+            return False
+        self.filtered(predicate).mapped(lambda b: print(b))
+        return self.filtered(predicate)
+    # OR
+    # @api.model
+    # def books_with_multiple_authors(self, all_books):
+    #     return all_books.filter(lambda b: len(b.author_ids > 1))
+
+    @api.model
+    def books_with_categories(self, all_books):
+        res = self.filtered(lambda b: b.category_id)
+        print(res)
+        return res
+    @api.model
+    def books_sorted_by_name(self, all_books):
+        all_books.sorted(key= 'release_date', reverse = True)
+
+    @api.model
+    def create(self, values):
+        if  not self.user_has_groups('library_book.group_librarian'):
+            if 'manager_remarks' in values:
+                 raise UserError('you are not allowed to modify', 'manager_remarks')
+        return super(Book, self).create(values)
+
+    def write(self, values):
+        if  not self.user_has_groups('library_book.group_librarian'):
+            if 'manager_remarks' in values:
+                 raise UserError('you are not allowed to modify', 'manager_remarks')
+        
+        return super(Book, self).write(values)
+
+    @api.model
+    def _name_search(self, name='', args=None, operator='ilike', limit=100, name_get_uid=None):
+            args = [] if args is None else args.copy()
+            if not(name == '' and operator == 'ilike'):
+                args += ['|', '|', '|',
+                    ('name', operator, name),
+                    ('isbn', operator, name),
+                    ('author_ids.name', operator, name)
+                 ]
+            return super(Book, self)._name_search(
+                name=name, args=args, operator=operator,
+                limit=limit, name_get_uid=name_get_uid)        
+
+    def grouped_data(self):
+       data =  self._get_average_cost()
+       _logger.info(f'total price for books in CATEGORY: {data}', )
+
+    @api.model
+    def _get_average_cost(self):
+      return  self.read_group(
+                domain= [('book_cost', '>', 0)],
+                fields=['category_id', 'book_cost:sum'],
+                groupby=['category_id'], lazy= False, limit= 10)
 
 class ResPartner(models.Model):
     """
@@ -130,4 +280,4 @@ class ResPartner(models.Model):
     def _compute_count_books(self):
         for rec in self:
             rec.count_books = len(rec.authored_book_ids)
-
+    

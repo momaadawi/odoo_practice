@@ -6,10 +6,24 @@
         <field name="model">library.book</field>
         <field name="arch" type="xml">
             <form>
+                <button name="make_available" string = "Make Available" type="object"/>
+                <button name="make_borrowed" string = "Make Borrowed" type="object"/>
+                <button name="make_lost" string = "Make Lost" type="object"/>
+                <seperator/>
+                <button name="log_all_library_members"  string="Log Members" type="object"/>
+                <button name="change_update_date" string = "Update Date" type="object"/>
+                <button name="createRecordset" string = "partners join" type="object"/>
+                <button type="object" name="books_with_categories" string="books with Cat"/>
+                <button type="object" name="books_sorted_by_name" string="books_sorted_by_name"/>
+                <button type="object" name="books_with_multiple_authors" string="books_with_multiple_authors"/>
+                <button name="grouped_data" string="Groupped Data" type="object"/>
+
+                <field name="state" class="statusbar"/>
                 <sheet>
                     <group>
                         <field name="name" />
                         <field name="author_ids" widget="many2many_tags"/>
+                        <field name="old_edition" />
                         <field name="publisher_id"/>
                         <field name="category_id"/>
                         <field name="ref_doc_id" />
@@ -29,6 +43,7 @@
                         <field name="date_updated" />
                         <field name="cover" widget="image" class="oe_avatar"/>
                         <field name="reader_rating"/>
+                        <field name="manager_remarks"/>
                     </group>
                     <group>
                         <field name="description" />
@@ -50,6 +65,7 @@
             <field name="ref_doc_id" />
             
             <field name="cover" class="oe_avatar"/>
+            <button type="object" name="books_with_categories" string="books with Cat"/>
         </tree>
     </field>
 </record>
