@@ -200,13 +200,15 @@ class Book(models.Model):
         print(result)
 
     @api.model
-    def books_with_multiple_authors(self, all_books):        
+    def books_with_multiple_authors(self, all_books):
+        _logger.debug('creating books with multiple authors')        
+        import pdb; pdb.set_trace()
         def predicate(book):
             if len(book.author_ids) > 0:
                 return True
             return False
-        self.filtered(predicate).mapped(lambda b: print(b))
-        return self.filtered(predicate)
+        result = self.filtered(predicate)
+        return result
     # OR
     # @api.model
     # def books_with_multiple_authors(self, all_books):
