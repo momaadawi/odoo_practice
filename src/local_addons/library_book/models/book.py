@@ -7,6 +7,7 @@ from datetime import timedelta
 from enum import Enum
 from odoo.exceptions import UserError
 from odoo.tools.translate import _
+from odoo.tests.common import Form 
 
 _logger = logging.getLogger(__name__)
 
@@ -260,6 +261,14 @@ class Book(models.Model):
                 domain= [('book_cost', '>', 0)],
                 fields=['category_id', 'book_cost:sum'],
                 groupby=['category_id'], lazy= False, limit= 10)
+    
+    def return_all_books(self): 
+        self.ensure_one()
+        wizard = self.env['library.return.wizard']
+        with Form(wizard) as retrun_form:
+            retrun_form.borrowed_id = self.env.user.partner_id
+            record = retrun_form.save()
+            record.books_returns()
 
 class ResPartner(models.Model):
     """

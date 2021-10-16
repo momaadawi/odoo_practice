@@ -26,14 +26,19 @@
     'data': [
         'security/groups.xml',
         'security/ir.model.access.csv',
+
         'views/library_book.xml',
         'views/library_book_category.xml',
-        'views/views.xml',
-        'views/templates.xml',
+        'views/res_config_settings_views.xml',
+
+        'wizard/library_book_rent_wizard.xml',
+        
         'data/data.xml'
     ],
     # only loaded in demonstration mode
     'demo': [
         'demo/demo.xml',
     ],
+    # post_init_hook, pre_init_hook, uninstall_hook
+    'post_init_hook': 'add_book_hook'
 }
