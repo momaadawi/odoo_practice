@@ -20,7 +20,7 @@
     'version': '14.1.0.1',
 
     # any module necessary for this one to work correctly
-    'depends': ['base'],
+    'depends': ['base', 'account', 'project'],
 
     # always loaded
     'data': [
@@ -32,6 +32,7 @@
         'views/res_config_settings_views.xml',
 
         'wizard/library_book_rent_wizard.xml',
+        'views/my_contacts.xml',
         
         'data/data.xml'
     ],

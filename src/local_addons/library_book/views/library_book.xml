@@ -88,4 +88,6 @@
         action="Library_book_action"
         parent="Library_book_menu_root"
         />
+    
+    
 </odoo>
