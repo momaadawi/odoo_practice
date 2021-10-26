@@ -25,6 +25,7 @@
     # always loaded
     'data': [
         'security/groups.xml',
+        'security/security_rules.xml',
         'security/ir.model.access.csv',
 
         'views/library_book.xml',
@@ -34,7 +35,8 @@
         'wizard/library_book_rent_wizard.xml',
         'views/my_contacts.xml',
         
-        'data/data.xml'
+        'data/data.xml',
+        'data/library_stage.xml',
     ],
     # only loaded in demonstration mode
     'demo': [

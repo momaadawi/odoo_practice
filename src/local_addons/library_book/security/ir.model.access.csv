@@ -6,3 +6,4 @@ access_librarylibrary.membermember,library_member,model_library_member,group_lib
 access_library_rent_wizard,library_rent_wizard,model_library_rent_wizard,group_librarian,1,1,1,1
 access_library_book_rent,library_book_rent,model_library_book_rent,group_librarian,1,1,1,1
 access_library_book_rent_statistics,library_book_rent_statistics,model_library_book_rent_statistics,group_librarian,1,1,1,1
+access_library_rent_stage,library.rent.stage,model_library_rent_stage,group_librarian,1,1,1,1
